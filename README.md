@@ -14,7 +14,7 @@ Collect mouse clicks:
     * display the rectangular areas with bolded lines
 * right-click to cancel
     * redraw remaining points with crosses
-* Escape key to stop defining and save the data into temp.mat in case of forgetting to save
+* Click a same point twice to stop defining and save the data into temp.mat in case of forgetting to save
 Save the defined data into AOI-{date-time}.mat
 
 # For each area of interest
