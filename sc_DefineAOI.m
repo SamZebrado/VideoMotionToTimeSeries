@@ -32,6 +32,7 @@ qContinue = 1;
 while qContinue
     hold off;
     fc_refresh_bg();
+    axis equal;
     title(title_str);
     nPoint = size(pointList,1);
     if nPoint

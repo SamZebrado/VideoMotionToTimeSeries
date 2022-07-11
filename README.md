@@ -19,6 +19,11 @@ Save the defined data into AOI-{date-time}.mat
 
 # For each area of interest
 * get time series for the intensity of each pixel
+* normalize each time series to its median
+* compute cross-pixel standard deviation to make onset more salient
+* the output could be used by onset detection tools
+
+# Alternative solution which has not been implemented
 * filter the data to exclude unwanted variations, e.g. slowly changing luminance due to the projector/screen/light's refreshing
 * select pixels whose standard deviation is large as "motion-indicating" pixels
 * combine information from multiple motion-indication pixels and get the earliest onset time
