@@ -1,66 +1,60 @@
+% a developing version using a subportion of the data
 %% Parameters
+% input file
 fname_AOI = 'AOI-rects-10-Jul-2022-19:03:31';
+
+% video frame selection
 sample_frame = 8590;
 st_frame = 8000;
 step_frame = 1;
-hdl_drawing_panel = 102;
-ed_frame = 10000;
+ed_frame = v.NumFrames;
 
+n_frame_per_section = 10000;
+%
 channel_number = 2; % RGB channel
-%% Helper function
-fc_into_a_vector = @(x)x(:);
-fc_diff_ratio_to_y = @(x,y)(x-y)./y;
-fc_median_norm_along_column = @(x)fc_diff_ratio_to_y(x,ones(size(x,1),1)*median(x,1));% to avoid computing the mean multiple times
 
-fc_cross_column_sd = @(x)std(x,[],2);
+% plotting-related
+hdl_drawing_panel = 102;
 
 %% Read in the video if not already done
 if ~exist('v','var')
     v = fc_ReadVideo;
 end
+
 %% Load AOI Data
 if ~exist('AOI_rects','var')
     D = load(fname_AOI);
     AOI_rects = D.AOI_rects;
 end
-vidFrame = read(v,sample_frame);
+%% AOI to indices
 AOI_indices = cellfun(@(rect)fc_rects_to_indices(rect,[v.Width,v.Height,]),...
     num2cell(AOI_rects,2),'UniformOutput',false); % one cell per AOI will contain indices of all pixels of the AOI
-n_AOI = length(AOI_indices(:));
+
 %% Check AOIs
+n_AOI = size(AOI_rects,1);
+vidFrame = read(v,sample_frame);
 for i_AOI = 1:n_AOI
     tmp = vidFrame.*repmat(uint8(AOI_indices{i_AOI}),1,1,3);
     imagesc(tmp)
     pause(0.5);
 end
-%% Get Time Series
 
-frame_list = st_frame:step_frame:ed_frame;
-raw_AOI_tS = repmat({nan(size(frame_list))},size(AOI_indices));% time series data
-i_data_point = 0;
-for i_frame = frame_list
-    vidFrame = read(v,i_frame);
-    i_data_point = i_data_point + 1;
-    if mod(i_data_point,1000)==0
-        fprintf('Number of data points: %i\n',i_data_point);
-    end
-    for i_AOI = 1:n_AOI
-        tmp = vidFrame(:,:,channel_number);
-        raw_AOI_tS{i_AOI}(i_data_point,:) = fc_into_a_vector(tmp(AOI_indices{i_AOI}));
-    end
+%% AOI to time series
+
+frame_lists = arrayfun(@(st)st:step_frame:min(ed_frame,st+n_frame_per_section-1),...
+    st_frame:n_frame_per_section:ed_frame,'UniformOutput',false);
+
+sd_tS = cell(size(frame_lists));
+n_fl = length(frame_lists);
+for i_framelist = 1:n_fl
+    fprintf('processing time section %i\n',i_framelist)
+    sd_tS{i_framelist} = fc_video_time_series_from_AOI(v,AOI_indices,frame_lists{i_framelist},channel_number);
 end
-%% Preprocessing: make the changes more salient
-proc_AOI_tS = raw_AOI_tS;% processed time series
+% cell function works just like for loop if provided with this function
+% sd_tS = cellfun(@(frame_list)fc_video_time_series_from_AOI(v,AOI_indices,frame_list,channel_number),frame_lists,'UniformOutput',false);
 
-for i_AOI = 1:n_AOI
-    tmp = double(raw_AOI_tS{i_AOI}); % time by pixel; double can be subject to mean() and std()
-    tmp = fc_median_norm_along_column(tmp); % transformed to percent change across time
-    proc_AOI_tS{i_AOI} = tmp;
-end
-
-sd_AOIs = cellfun(fc_cross_column_sd,proc_AOI_tS(:)','UniformOutput',false);
-sd_tS = fc_median_norm_along_column(cell2mat(sd_AOIs));
+sd_tS_combined = cell2mat(sd_tS(:));
 %% Visualize
 figure(hdl_drawing_panel)
-plot(sd_tS);
+plot(sd_tS_combined);
 legend(arrayfun(@num2str,(1:n_AOI)','UniformOutput',false))
