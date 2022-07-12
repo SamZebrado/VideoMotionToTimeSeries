@@ -138,7 +138,7 @@ if qValidPlot
     fc_overlap_with_ind(st_ind,'r*',...
         'LineWidth',2,...
         'MarkerSize',10)
-    WaitSecs(0.2)
+    pause(0.2); % if you have PTB, you can use the more accurate WaitSecs(0.2);
     % ylim([-0.1,0.25])
     drawnow;
 end

@@ -1,7 +1,7 @@
 % a developing version using a subportion of the data
 %% Parameters
 % input file
-fname_AOI = 'AOI-rects-10-Jul-2022-19:03:31';
+fname_AOI = 'AOI-rects-10-Jul-2022-19:03:31';% defined using sc_DefineAOI.m
 
 % video frame selection
 sample_frame = 8590;

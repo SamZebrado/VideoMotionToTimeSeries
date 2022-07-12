@@ -1,7 +1,7 @@
 function [sd_tS,raw_AOI_tS] = fc_video_time_series_from_AOI(v,AOI_indices,frame_list,channel_number)
 %% Helper function
 fc_into_a_vector = @(x)x(:);
-fc_diff_ratio_to_y = @(x,y)(x-y)./y;
+fc_diff_ratio_to_y = @(x,y)(x-y)./(y+eps);% eps: avoid dividing by zero
 fc_median_norm_along_column = @(x)fc_diff_ratio_to_y(x,ones(size(x,1),1)*median(x,1));% to avoid computing the mean multiple times
 
 fc_cross_column_sd = @(x)std(x,[],2);
